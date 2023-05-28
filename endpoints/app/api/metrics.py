@@ -1,7 +1,7 @@
 from typing import List
 from sqlalchemy import func
 from datetime import datetime, timedelta
-from app.utils import create_events_evolution_graph
+from app.api.utils import create_events_evolution_graph
 from flask import jsonify, send_file
 from app.models import Event
 from app.api import bp

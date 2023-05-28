@@ -17,15 +17,15 @@ def create_events_evolution_graph(events: List[Event], start_date: datetime, end
     """
     
     start_date  = start_date.replace(second=0, microsecond=0)
-    end_date  = datetime.utcnow().replace(second=0, microsecond=0)
+    end_date  = end_date.replace(second=0, microsecond=0)
     event_counts = {
         start_date + timedelta(minutes=i): {event_type: 0 for event_type in event_types}
-        for i in range(int((end_date - start_date).total_seconds() / 60))
+        for i in range(int((end_date - start_date).total_seconds() / 60) + 1)
     }
     for event in events:
         event_date = event.created_at.replace(second=0, microsecond=0)
         if event_date in event_counts:
-            event_counts[event.created_at.replace(second=0, microsecond=0)][event.type] += 1
+            event_counts[event_date][event.type] += 1
         else:
             logging.warning(f"Event {event.id} is not in range [{start_date}, {end_date}]")
         
