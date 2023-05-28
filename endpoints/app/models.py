@@ -1,37 +1,9 @@
-import os
+from datetime import datetime
 from sqlalchemy import BigInteger, Column, DateTime, String
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import scoped_session, sessionmaker
-from sqlalchemy import create_engine
 from app import db
 
 
-
-class PaginatedAPIMixin(object):
-    @staticmethod
-    def to_collection_dict(query, page: int, per_page: int, endpoint, **kwargs):
-        resources = query.paginate(page=page, per_page=per_page,
-                                   error_out=False)
-        data = {
-            'items': [item.to_dict() for item in resources.items],
-            '_meta': {
-                'page': page,
-                'per_page': per_page,
-                'total_pages': resources.pages,
-                'total_items': resources.total
-            },
-            '_links': {
-                'self': url_for(endpoint, page=page, per_page=per_page,
-                                **kwargs),
-                'next': url_for(endpoint, page=page + 1, per_page=per_page,
-                                **kwargs) if resources.has_next else None,
-                'prev': url_for(endpoint, page=page - 1, per_page=per_page,
-                                **kwargs) if resources.has_prev else None
-            }
-        }
-        return data
-
-class Event(db.Model, PaginatedAPIMixin):
+class Event(db.Model):
     __tablename__ = 'events'
     id = Column(BigInteger, primary_key=True)
     type = Column(String)
@@ -49,3 +21,15 @@ class Event(db.Model, PaginatedAPIMixin):
             'created_at': self.created_at.isoformat() + 'Z'
         }
         return data
+
+    @staticmethod
+    def from_dict(data):
+        """
+        Reconstructs the Event object from a dictionary
+        """
+        return Event(id=data['id'],
+                     type=data['type'],
+                     repo_name=data['repo_name'],
+                     created_at=datetime.fromisoformat(data['created_at'][:-1]))
+
+

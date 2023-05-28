@@ -37,7 +37,7 @@ def average_pr_time(repo_name: str):
 def event_counts(offset: int):
     offset_datetime = datetime.utcnow() - timedelta(minutes=offset)
     event_counts = (
-        db.session.query(func.count(Event.type))
+        db.session.query(Event.type ,func.count(Event.type))
         .filter(Event.created_at >= offset_datetime)
         .group_by(Event.type)
         .all()
@@ -53,7 +53,7 @@ def event_counts(offset: int):
 
 
 
-@bp.route('/metrics/event_per_minute_image/<int:offset>')
+@bp.route('/metrics/events_per_minute_image/<int:offset>')
 def event_per_minute_image(offset: int):
     now = datetime.utcnow()
     offset_datetime = now - timedelta(minutes=offset)
@@ -62,3 +62,4 @@ def event_per_minute_image(offset: int):
 
     # Save it to a BytesIO object
     return send_file(buf, mimetype='image/png')
+

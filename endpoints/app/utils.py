@@ -7,8 +7,7 @@ from matplotlib.dates import DateFormatter
 from app.models import Event
 
 
-def create_events_evolution_graph(events: List[Event], start_date: datetime, end_date: datetime, event_types: List[str] = ['PullRequestEvent', 'IssuesEvent', 'WatchEvent']
-                                  ):
+def create_events_evolution_graph(events: List[Event], start_date: datetime, end_date: datetime, event_types: List[str]):
     """
     Create a graph showing the evolution of events over time, and return it as a BytesIO object.
     The Events must be in range [start_date, end_date], otherwise will be ignored. If type is not in event_types, it Key error will be raised.
