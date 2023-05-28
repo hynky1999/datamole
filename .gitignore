@@ -1,0 +1,16 @@
+# Python-specific ignores
+*.pyc
+__pycache__/
+
+# Flask-specific ignores
+instance/
+*.egg-info/
+*.egg
+*.pyc
+.env
+
+# Logs
+*.log
+
+# Virtual environment
+venv/
