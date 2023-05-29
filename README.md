@@ -25,6 +25,7 @@ It has docs, just run the app and go to localhost:5000/docs.
 ## Asumptions
 - No authentication is needed for the API. We can add authentication later if needed.
 - We deploy using Docker/Kubernetes.
+- We assume zero time offset
 
 ## Design choices and assumptions
 As can be seen from the folder layout the application is split into two services:
