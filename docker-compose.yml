@@ -1,0 +1,50 @@
+version: '3.9'
+services:
+  kafka:
+    image: spotify/kafka
+    hostname: kafka
+    ports:
+      - 9092:9092
+      - 2181:2181
+    environment:
+      KAFKA_ADVERTISED_HOST: localhost
+      KAFKA_ADVERTISED_PORT: 9092
+
+    networks:
+      - mynetwork
+
+  flask-app:
+    build:
+      context: ./endpoints
+    ports:
+      - 5000:5000
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_URL: kafka:9092
+      KAFKA_TOPIC: ${KAFKA_TOPIC}
+      SQLALCHEMY_DATABASE_URI: sqlite:///database.db
+      HOST: 0.0.0.0
+
+    volumes:
+      - db:/app/database.db
+
+    networks:
+      - mynetwork
+  github_injector:
+    build:
+      context: ./injectors
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_URL: kafka:9092
+      KAFKA_TOPIC: ${KAFKA_TOPIC}
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge
+
+volumes:
+  db:
