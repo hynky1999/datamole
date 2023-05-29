@@ -8,11 +8,9 @@ from sqlalchemy import exc
 from app import db
 
 
-def listen_to_gh_events(app, exit_event):
-    """
-    Background process that listens to the Kafka topic providing github events
-    """
-    while True:
+def init_kafka(app, exit_event):
+    consumer = None
+    while exit_event.is_set() is False:
         try:
             consumer = KafkaConsumer(
                 app.config["KAFKA_TOPIC"],
@@ -22,15 +20,32 @@ def listen_to_gh_events(app, exit_event):
                 auto_offset_reset="earliest",
                 consumer_timeout_ms=5000,
             )
-            for message in consumer:
-                process_message(app, message)
-
-            if exit_event.is_set():
-                consumer.close()
-                break
+            logging.info("Kafka consumer initialized")
+            break
         except Exception as e:
-            logging.error("Error listening to events: {}".format(e))
+            logging.error("Error initializing Kafka consumer: {}".format(e))
             time.sleep(5)
+    return consumer
+
+
+def listen_to_gh_events(app, exit_event):
+    """
+    Background process that listens to the Kafka topic providing github events
+    """
+    consumer = init_kafka(app, exit_event)
+    if consumer is None:
+        logging.error("Kafka consumer could not be initialized")
+        return
+
+    while True:
+        for message in consumer:
+            process_message(app, message)
+
+        if exit_event.is_set():
+            logging.info("Exiting background process")
+            break
+
+    consumer.close()
 
 
 def process_message(app, message):
