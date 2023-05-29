@@ -1,4 +1,5 @@
 from flask import Blueprint
-bp = Blueprint('api', __name__)
 
-from app.api import metrics, errors, utils
+bp = Blueprint("api", __name__)
+
+from app.api import metrics, utils

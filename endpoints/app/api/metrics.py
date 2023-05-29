@@ -4,7 +4,7 @@ from flask_marshmallow import Schema
 from sqlalchemy import func
 from datetime import datetime, timedelta
 from app.api.utils import create_events_evolution_graph
-from flask import send_file
+from flask import send_file, abort
 from app.models import Event
 from app.api import bp
 from app import db
@@ -25,6 +25,7 @@ class EventCountsResponse:
 
 
 EVENT_TYPES = ["PullRequestEvent", "IssuesEvent", "WatchEvent"]
+MAX_OFFSET = 120
 
 
 @bp.route("/metrics/average_pr_time/<repo_name>", methods=["GET"])
@@ -63,7 +64,15 @@ def average_pr_time(repo_name: str):
 
 @bp.route("/metrics/event_counts/<int:offset>", methods=["GET"])
 @response(
-    marshmallow_dataclass.class_schema(EventCountsResponse, base_schema=Schema)
+    marshmallow_dataclass.class_schema(
+        EventCountsResponse, base_schema=Schema
+    ),
+    status_code=200,
+)
+@other_responses(
+    {
+        400: f"The offset is too big, the maximum offset is {MAX_OFFSET} minutes."
+    }
 )
 def event_counts(offset: int):
     """
@@ -75,6 +84,9 @@ def event_counts(offset: int):
     Returns:
         - A dictionary with the counts of different events.
     """
+    if offset > MAX_OFFSET:
+        return abort(400)
+
     offset_datetime = datetime.utcnow() - timedelta(minutes=offset)
     event_counts = (
         db.session.query(Event.type, func.count(Event.type))
@@ -94,7 +106,8 @@ def event_counts(offset: int):
 @bp.route("/metrics/events_per_minute_image/<int:offset>", methods=["GET"])
 @other_responses(
     {
-        200: "An image file (png format) that represents the events distribution per minute."
+        200: "An image file (png format) that represents the events distribution per minute.",
+        400: f"The offset is too big, the maximum offset is {MAX_OFFSET} minutes.",
     }
 )
 def event_per_minute_image(offset: int):
@@ -107,6 +120,8 @@ def event_per_minute_image(offset: int):
     Returns:
         - An image file (png format) that represents the events distribution per minute.
     """
+    if offset > MAX_OFFSET:
+        abort(400)
     now = datetime.utcnow()
     offset_datetime = now - timedelta(minutes=offset)
     events = (

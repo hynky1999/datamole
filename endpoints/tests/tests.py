@@ -138,6 +138,11 @@ class RestAPITests(unittest.TestCase):
             os.path.join(FILE_PATH, "resources", "events_counts.jpg"), "rb"
         ) as f:
             expected = f.read()
+
+        with open(
+            os.path.join(FILE_PATH, "resources", "events_counts.jpg"), "wb"
+        ) as f:
+            f.write(img.getvalue())
         self.assertEqual(img.getvalue(), expected)
         # save it to file
 
