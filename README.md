@@ -14,12 +14,23 @@ Since we have two services, we need to run tests for each service separately. To
 ```
 cd endpoints && python -m unittest discover
 ```
+Make sure you have the dependencies installed. To install the dependencies, run the following command:
+```
+pip install -r requirements.txt
+```
 
 ## What does the api do?
-It actually has docs, just go to localhost:5000/docs to see the docs.
+It has docs, just run the app and go to localhost:5000/docs.
 
+## Asumptions
+- No authentication is needed for the API. We can add authentication later if needed.
+- We deploy using Docker/Kubernetes.
 
 ## Design choices and assumptions
+As can be seen from the folder layout the application is split into two services:
+1. Github injector - responsible getting the data from github and inserting it into the queue.
+2. API - responsible for getting the data from the queue, persisting it into the database and serving it to the user.
+
 
 ### Why splitting the application into two services?
 By splitting into two services, we can achieve two things:
@@ -27,8 +38,14 @@ By splitting into two services, we can achieve two things:
 2. When one service fails the other service can still work. For example, if github injector fails, the user can still use the API to get the data from the database.
 When API fails, the github injector can still insert data into the queue, which will be picked up by the API when it is back online.
 
-### Why using Kafka?
-Frankly, it's the first queue that comes to my mind which has pub/sub, while allowing to retrieve old messages (not like Reddis).
+### Why using a queue and not POSTing directly to the API?
+When we use API POST and the API fails, we lose the data. When we use a queue, we can retry the request until it succeeds. We can also use a queue to throttle the requests to the API. Secondly, it doesn't seem like a good
+idea to add a POST endpoint without authentication.
+
+### Why not directly inserting into the database?
+I don't really like it, because I think that only a single service should be
+responsible for the data. We then have to solve the problem of how to
+manage models and migrations.
 
 ### Why using sqlite?
 Really simple to use and good enough for our purpose. We can easily switch to another database if needed since we use SQLAlchemy ORM.
