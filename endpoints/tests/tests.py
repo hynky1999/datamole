@@ -13,6 +13,7 @@ FILE_PATH = os.path.dirname(os.path.abspath(__file__))
 class TestConfig(object):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///test.db"
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
 class RestAPITests(unittest.TestCase):

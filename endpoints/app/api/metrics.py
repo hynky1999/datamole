@@ -114,5 +114,7 @@ def event_per_minute_image(offset: int):
         .filter(Event.created_at >= offset_datetime)
         .all()
     )
-    buf = create_events_evolution_graph(events, now)
+    buf = create_events_evolution_graph(
+        events, offset_datetime, now, EVENT_TYPES
+    )
     return send_file(buf, mimetype="image/png")
